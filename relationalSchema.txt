@@ -1,0 +1,188 @@
+//Created !
+
+create table customer
+(cust_id numeric(10,0),
+name varchar (20) not null,
+customer_adress varchar(40),
+primary key (cust_id) );
+
+create table phone 
+(meid numeric(10,0),
+manufacturer varchar(50) not null,
+model varchar(30) not null,
+primary key(meid) );
+
+create table unactive_phone
+(meid numeric(10,0),
+info_id numeric(12,0),
+network_time_period numeric(50,2),
+previous_number numeric(10,0),
+primary key (meid,info_id),
+foreign key (meid) references phone on delete cascade);
+
+
+
+create table active_phone
+(meid numeric(10,0),
+phone_num numeric(10,0),
+primary key (meid),
+foreign key (phone_num) references phone_number on delete set null,
+foreign key (meid) references phone on delete cascade);
+
+
+
+create table owns
+(cust_id numeric(10,0),
+meid numeric(10,0),
+primary key (cust_id,meid),
+foreign key (cust_id) references customer
+	on delete cascade,
+foreign key (meid) references phone
+	on delete cascade);
+
+create table account
+(account_id numeric(12,0),
+primary key (account_id));
+	
+create table individual_account
+(account_id numeric(12,0),
+primary key (account_id),
+foreign key(account_id) references account(account_id) on delete cascade);
+
+create table family_account
+(account_id numeric(12,0),
+primary key (account_id),
+foreign key(account_id) references account(account_id) on delete cascade);
+
+
+create table business_account
+(account_id numeric(12,0),
+primary key (account_id),
+foreign key(account_id) references account(account_id) on delete cascade);
+
+
+create table has
+(cust_id numeric(10,0),
+account_id numeric(12,0),
+primary key (cust_id,account_id),
+foreign key (cust_id) references customer
+	on delete cascade,
+foreign key (account_id) references account
+	on delete set null);
+	
+create table phone_number
+(
+phone_num numeric(10,0),
+account_id numeric(12,0),
+phone_type varchar(7) check (phone_type in ('Primary','Other')),
+primary key (phone_num),
+foreign key (account_id) references account on delete set null
+);
+
+
+
+create table usage 
+(usage_id numeric(12,0),
+phone_num numeric(10,0),
+number_type varchar(11) check (number_type in ('Destination','Source')),
+primary key (usage_id),
+foreign key (phone_num) references phone_number
+	on delete cascade);
+
+create table text_usage
+(usage_id numeric(12,0),
+time TIMESTAMP,
+text_size numeric(12,0),
+other_number numeric(10,0),
+primary key (usage_id),
+foreign key (usage_id) references usage on delete cascade);
+
+create table call_usage
+(usage_id numeric(12,0),
+start_time TIMESTAMP,
+end_time TIMESTAMP,
+duration numeric(40,0),
+other_number numeric(10,0),
+primary key (usage_id),
+foreign key (usage_id) references usage on delete cascade);
+
+create table internet_usage
+(usage_id numeric(12,0),
+total_usage numeric(24,0),
+primary key (usage_id),
+foreign key (usage_id) references usage on delete cascade);
+
+
+create table billing_plan
+(billing_id numeric(12,0),
+plan_type varchar(65),
+call_rate numeric(5,2),
+text_rate numeric(5,2),
+byte_rate numeric(5,2),
+monthly_rate numeric (20,2),
+primary key (billing_id));
+
+
+
+create table acc_plan
+(account_id numeric(12,0),
+billing_id numeric(12,0),
+foreign key (plan_type) references billing_plan on delete set null,
+foreign key (billing_id) references account on delete cascade);
+
+
+create table physical_store
+(store_id numeric(12,0),
+store_address varchar(40),
+primary key (store_id));
+
+create table sold
+(store_id numeric(12,0),
+meid numeric(10,0),
+foreign key (store_id) references physical_store
+	on delete cascade,
+foreign key (meid) references phone
+	on delete cascade);
+	
+create table set_up
+(
+	account_id numeric(12,0),
+	store_id numeric(12,0),
+	primary key(account_id,store_id),
+	foreign key (account_id) references account on delete cascade,
+	foreign key (store_id) references physical_store on delete cascade
+);
+
+create table online_order
+(
+	order_id numeric(12,0),
+	cust_id numeric(10,0),
+	account_id numeric(12,0),
+	order_date TIMESTAMP,
+	primary key (order_id),
+	foreign key (cust_id) references customer on delete cascade,
+	foreign key (account_id) references account on delete cascade
+
+);
+
+create table bill
+(
+	bill_id numeric(12,0),
+	usage_id numeric(12,0),
+	to_charge numeric(38,2),
+	curr_date TIMESTAMP,
+	primary key (bill_id),
+	foreign key (usage_id) references usage on delete set null
+);
+
+//Not created!
+
+
+//Not necessary
+
+	
+create table usage_billing
+(usage_id numeric(12,0),
+billing_id numeric(12,0),
+foreign key (billing_id) references billing_plan on delete set null,
+foreign key (usage_id) references usage on delete cascade);

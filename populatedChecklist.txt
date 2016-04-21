@@ -1,0 +1,26 @@
+Filled:
+
+Phone
+Account
+individual account
+family account
+business account
+Customer
+Active phone
+Unactive phone
+phone_number
+usage
+internet
+call
+text
+owns
+has
+billing_plan
+usage_billing
+acc_plan
+Physical store
+set_up
+sells
+
+Not filled:
+

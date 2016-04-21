@@ -1,0 +1,68 @@
+//created:
+CREATE OR REPLACE TRIGGER create_call_bill
+  after INSERT ON call_usage
+  FOR EACH ROW
+DECLARE
+    total_price numeric(38,2);
+    callRate numeric (5,2);
+    billID numeric (12,0);
+BEGIN
+    select call_rate into callRate from billing_plan natural join acc_plan natural join account natural join phone_number natural join usage
+	where usage_id = :new.usage_id;
+    total_price := callRate/60 * :new.duration;
+    select bill_id into billID from bill where bill_id >= all (select bill_id from bill);
+    billID := billID + 1;
+    insert into bill values (billID, :new.usage_id, total_price,CURRENT_TIMESTAMP);
+END;
+
+//text
+
+CREATE OR REPLACE TRIGGER create_text_bill
+  after INSERT ON text_usage
+  FOR EACH ROW
+DECLARE
+    total_price numeric(38,2);
+    textRate numeric (5,2);
+    billID numeric (12,0);
+BEGIN
+    select text_rate into textRate from billing_plan natural join acc_plan natural join account natural join phone_number natural join usage
+	where usage_id = :new.usage_id;
+    total_price := textRate;
+    select bill_id into billID from bill where bill_id >= all (select bill_id from bill);
+    billID := billID + 1;
+    insert into bill values (billID, :new.usage_id, total_price,CURRENT_TIMESTAMP);
+END;
+
+
+//internet 
+
+CREATE OR REPLACE TRIGGER create_internet_bill
+  after INSERT ON internet_usage
+  FOR EACH ROW
+DECLARE
+    total_price numeric(38,2);
+    byteRate numeric (5,2);
+    billID numeric (12,0);
+BEGIN
+    select byte_rate into byteRate from billing_plan natural join acc_plan natural join account natural join phone_number natural join usage 
+	where usage_id = :new.usage_id;
+    total_price := byteRate*:new.total_usage;
+    select bill_id into billID from bill where bill_id >= all (select bill_id from bill);
+    billID := billID + 1;
+    insert into bill values (billID, :new.usage_id, total_price,CURRENT_TIMESTAMP);
+END;
+	
+//not created:
+
+
+
+
+/
+create or replace trigger dec_account_id
+after delete on account
+referencing old as orow
+	for each row
+	begin
+		update account set account_id = account_id - 1 where account_id > :orow.account_id;
+	end;
+	
