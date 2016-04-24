@@ -7,6 +7,7 @@ package joginterface;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -17,8 +18,10 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
@@ -35,7 +38,6 @@ public class SystemOptions
     
     Statement s;
     Connection con;
-    DBCon connection;
     
     public SystemOptions() throws ClassNotFoundException
     {
@@ -80,7 +82,7 @@ public class SystemOptions
      
     public void readUsage()
     {
-        boolean auth = true;
+        boolean auth = false;
         String regex = "[0-9]+";
         try {
                 Scanner sc = new Scanner(System.in);
@@ -115,6 +117,7 @@ public class SystemOptions
                     {
                         System.out.println("Please type the input file name:");
                         inputFile = sc.next();
+                        
                         FileReader fileR = new FileReader(inputFile);
                         BufferedReader buff = new BufferedReader(fileR);
                         
@@ -123,10 +126,10 @@ public class SystemOptions
                             String[] splitLine = line.split(",");
                             
                             //Decide what type of usage it is: (first read is text, second is call, third is internet)
-                            switch (turn)
-                            {
-                                case 0: //reads text
-                                    
+
+                                if (turn == 0) //text
+                                {
+                                    turn = 1;
                                     boolean presentError = false;
                                     if ( splitLine.length != 4) //if contains more/less than 4 arguments
                                     {
@@ -221,18 +224,21 @@ public class SystemOptions
                                         
                                     }
                                     
-                                    turn = 1;
-                                    break;
-                                case 1: //reads call
+                                    
+                                }
+                                else if (turn == 1) //call
+                                {
+                                    turn = 2;
                                     boolean addError = false;
                                     if (splitLine.length != 4) //checks if received the correct number of arguments
                                     {
+
                                         errorRecordList.add(line);
                                         addError = true;
                                     }
                                     else
                                     {
-                                        if (splitLine[0].length() != 10 && !splitLine[0].matches(regex) && splitLine[1].length() != 10 && !splitLine[1].matches(regex))
+                                        if (splitLine[0].length() != 10 || !splitLine[0].matches(regex) || splitLine[1].length() != 10 || !splitLine[1].matches(regex))
                                         {
                                             errorRecordList.add(line);
                                             addError = true;
@@ -251,6 +257,61 @@ public class SystemOptions
                                                 result = s.executeQuery(searchFor);
 
                                                 boolean validStNum = result.next();
+                                                
+                                                if (!validFirstNum && !validStNum)
+                                                {
+
+                                                    errorRecordList.add(line);
+                                                    addError = true;
+                                                    
+                                                }
+                                                else
+                                                {
+                                                    
+                                                    //CHECK IF DURATION IS VALID
+                                                    SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+                                                    Date d1 = format.parse(splitLine[2]);
+                                                    Date d2 = format.parse(splitLine[3]);
+                                                    
+                                                    long duration = (d2.getTime() - d1.getTime()) / 1000;
+                                                    
+                                                    if (duration < 0)
+                                                    {
+
+                                                        errorRecordList.add(line);
+                                                        addError = true;
+                                                    }
+                                                    else
+                                                    {
+                                                    
+                                                    
+                                                    
+                                                        String insertString;
+
+
+                                                        if (validFirstNum)
+                                                        {
+                                                            usage_id++;
+                                                            insertString = "insert into usage values (" + usage_id + "," + splitLine[0] + ",'Source')";
+                                                            s.executeUpdate(insertString);
+
+                                                            insertString = "insert into call_usage values (" + usage_id + ",TO_TIMESTAMP('" + splitLine[2] + "','DD-MM-YYYY HH24:MI:SS'),"
+                                                                    + "TO_TIMESTAMP('" + splitLine[3] + "','DD-MM-YYYY HH24:MI:SS')," + duration + "," + splitLine[1] + ")";
+                                                            s.executeUpdate(insertString);
+                                                        }
+
+                                                        if (validStNum)
+                                                        {
+                                                            usage_id++;
+                                                            insertString = "insert into usage values (" + usage_id + "," + splitLine[1] + ",'Destination')";
+                                                            s.executeUpdate(insertString);
+
+                                                            insertString = "insert into call_usage values (" + usage_id + ",TO_TIMESTAMP('" + splitLine[2] + "','DD-MM-YYYY HH24:MI:SS'),"
+                                                                    + "TO_TIMESTAMP('" + splitLine[3] + "','DD-MM-YYYY HH24:MI:SS')," + duration + "," + splitLine[0] + ")";
+                                                            s.executeUpdate(insertString);
+                                                        }
+                                                    }
+                                                }
                                             } 
                                             catch (SQLException ex) 
                                             {
@@ -258,17 +319,25 @@ public class SystemOptions
                                                 if (addError == false)
                                                     errorRecordList.add(line);
                                             }
+                                            catch (java.text.ParseException ex)
+                                            {
+                                                if (addError == false)
+                                                    errorRecordList.add(line);
+                                            }
                                         }
                                         }
                                     
                                     
-                                    turn = 2;
-                                    break;
+                                
+                                }
                                     
-                                default: //reads byte
+                                else //internet
+                                {
+                                    turn = 0;
                                     boolean insertError = false;
                                     if (splitLine.length != 3)
                                     {
+
                                         errorRecordList.add(line);
                                         insertError = true;
                                         
@@ -282,7 +351,7 @@ public class SystemOptions
                                         }
                                         else
                                         {
-                                            if (!splitLine[1].equals("Upload") || !splitLine[1].equals("Download"))
+                                            if (!splitLine[1].equals("upload") && !splitLine[1].equals("download"))
                                             {
                                                 errorRecordList.add(line);
                                                 insertError = true;
@@ -298,7 +367,7 @@ public class SystemOptions
                                                 else
                                                 {
                                                     String type;
-                                                    if (splitLine[1].equals("Upload"))
+                                                    if (splitLine[1].equals("upload"))
                                                         type = "Source";
                                                     else
                                                         type = "Destination";
@@ -328,16 +397,13 @@ public class SystemOptions
 
                                     
                                     
-                                    turn = 0;
-                                    break;
-                            }
+                                    
+                        }
+                           
                             
-                            //Insert into appropriate table
-                            
-                            //If not good data, places it into error file
                           
                             
-                            auth = true;
+                            auth = false;
                          
                         
                         
@@ -347,12 +413,12 @@ public class SystemOptions
                     catch (FileNotFoundException e)
                     {
                         System.out.println("File not found. Please try again");
-                        auth = false;
+                        auth = true;
                     }
                     catch (IOException ex)
                     {
                         System.out.println("File could not be read. Please try again");
-                        auth = false;
+                        auth = true;
                     }
                     
                     
@@ -368,7 +434,12 @@ public class SystemOptions
                     System.out.println("Please type the output error file name:");
                     outputFile = sc.next();
                     
-                    FileWriter fileW = new FileWriter(outputFile);
+                    File outFile = new File(outputFile);
+                    
+                    if (outFile.createNewFile())
+                        System.out.println("Output file " + outputFile + " has been created!");
+                    
+                    FileWriter fileW = new FileWriter(outFile);
                     BufferedWriter buffW = new BufferedWriter(fileW);
                     PrintWriter writer = new PrintWriter(buffW);
                     
@@ -501,4 +572,5 @@ public class SystemOptions
         }
         
     }
+    
 }

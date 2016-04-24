@@ -14,12 +14,9 @@ import java.util.logging.Logger;
  *
  * @author Rafael
  */
-public class JogInterface {
+public class JogInterface 
+{
 
-    /**
-     * @param args the command line arguments
-     */
-    
     
     public static void printMainMenu()
     {
@@ -59,9 +56,9 @@ public class JogInterface {
                             System.out.println("1 - Change billing plan");
                             System.out.println("2 - Request new phone");
                             System.out.println("3 - Terminate Service");
-                            System.out.println("4 - Deactivate phone");
-                            System.out.println("5 - Change account type");
-                            System.out.println("6 - Return to main menu");
+                            System.out.println("3 - Deactivate phone");
+                            System.out.println("4 - Change account type");
+                            System.out.println("5 - Return to main menu");
 
                             while (!sc.hasNextInt())
                             {
@@ -83,9 +80,6 @@ public class JogInterface {
                                 customerMenu.requestNewPhone();
                                 break;
                                 
-                            case 3:
-                                customerMenu.terminateService();
-                                break;
                                 
                                 
                             case 6:
@@ -141,7 +135,7 @@ public class JogInterface {
                         switch (option)
                         {
                             case 1:
-
+                                system.readUsage();
                                 break;
 
                             case 2:

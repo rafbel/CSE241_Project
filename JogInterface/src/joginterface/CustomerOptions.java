@@ -76,10 +76,7 @@ public class CustomerOptions
         String insertString = "update acc_plan SET billing_id = " + newPlan + " where account_id =" + accountID;
         s.executeUpdate(insertString);
         
-        //updates billing plan on Oracle DB
-       /* String updateString = "update billing_plan SET plan_type = '" + newPlan + "' ,call_rate = '" + callRate + "' ,textRate = '" + textRate + "' ,byteRate = '" + byteRate + "' ,monthlyRate = '" + monthlyRate 
-                + "' where billing_id = '" + billing_id + "'";
-        s.executeUpdate(updateString);*/
+        
     }
     
     public void requestNewPhone() throws SQLException //requests new phone from the online store with INFINITE inventory -> complete
@@ -95,7 +92,7 @@ public class CustomerOptions
             result.next();
             if (result.getInt(1) > 4)
             {
-                System.out.println("This family account is full. Please upgrade account to a business account if you wish to add more phones");
+                System.out.println("This family account is full and doesn't support additional phones");
             }
             else
                 authorized = true;
@@ -105,7 +102,7 @@ public class CustomerOptions
             authorized = true;
         
         else
-            System.out.println("This is an individual account. Please upgrade account to a business or family account if you wish to add more phones");
+            System.out.println("This is an individual account. Individual accounts only support one phone");
         
         if (authorized)
         {
@@ -215,41 +212,14 @@ public class CustomerOptions
             insertString = "insert into active_phone values ('" + meid + "','" + phoneNum + "')";
             s.executeUpdate(insertString);
                     
-            
+            System.out.println("Phone number for the requested phone is " + phoneNum);
             
         }
         
     }
     
     
-    public void terminateService() //user wishes to terminate his account
-    {
-        try //user wishes to terminate his account
-        {
-            //Makes all phones unactive, deletes account
-            String searchFor = "select phone_num,meid from active_phone natural join phone_number natural join account";
-            List <String> phoneList = new ArrayList<String>();
-            List <String> meidList = new ArrayList<String>();
-             
-            ResultSet result = s.executeQuery(searchFor);
-            while(result.next())
-            {
-                phoneList.add(result.getString(1));
-                meidList.add(result.getString(2));
-            }
-            
-            
-                    
-        } 
-        catch (SQLException ex) 
-        {
-            Logger.getLogger(CustomerOptions.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        
-    }
-    
-    public void deactivatePhone() //turns active phone into unactive phone
+    /*public void deactivatePhone() //turns active phone into unactive phone
     {
         String checkString = "select count(*) from phone_number where account_id = " + accountID;
         try
@@ -386,7 +356,7 @@ public class CustomerOptions
             Logger.getLogger(CustomerOptions.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("Database error. Please try again later.");
         }
-    }
+    }*/
   
     private void authAccount() throws SQLException //authorizes user -> completed
     {
@@ -487,93 +457,4 @@ public class CustomerOptions
         
     }
     
-      
-   /* public void switchAccType()
-    {
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Enter one of the available choices");
-        switch(accountType)
-        {
-            case "Individual":
-                System.out.println("1 - Upgrade to a family account");
-                System.out.println("2 - Upgrade to a business account");
-                System.out.println("3 - Cancel");
-                int option;
-              
-                
-                while (true)
-                {
-                
-                    while (!sc.hasNextInt()) 
-                    {
-                       System.out.println("Please enter an accetable option");
-                       sc.next();
-                    }
-                    option = sc.nextInt();
-                    
-                    if (option > 0 || option < 4)
-                        break;
-                    else
-                        System.out.println("Please enter an accetable option");
-                
-                }
-                String table ="";
-                
-                switch(option)
-                {
-                    case 1: 
-                        table = "family_account";
-                                
-                        
-                }
-                
-                
-                
-                
-                break;
-            case "Family":
-                break;
-        }
-    }*/
-    
-    
-    
-    
-    /*public void newService() //creates new account -> insert into other class if it is to be made
-    {
-        //Checks if user is an existing customer
-        
-        
-        System.out.println("Choose account type by entering its number:");
-        System.out.println("1 - Individual (one customer)");
-        System.out.println("2 - Family (up to 4 customers)");
-        System.out.println("3 - Business (unlimited customers)");
-        
-        Scanner scanner = new Scanner(System.in);
-        int option = 0;
-        while (true)
-        {
-            while (!scanner.hasNextInt())
-            {
-                System.out.println("Please enter one of the options above");
-                scanner.next();
-            }
-            option = scanner.nextInt();
-            if (option > 0 && option < 4)
-                break;
-        }
-        String pass ="";
-        
-        do
-        {
-            System.out.println("Enter a password of minimum 4 characters and maximum 11");
-            pass = scanner.next();
-        } while (pass.length() < 4 && pass.length() > 11);
-        
-        switch (option)
-        {
-            case 1:
-                break;
-        }
-    }*/
-}
+}   

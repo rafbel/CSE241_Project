@@ -40,11 +40,13 @@ public class PopulateProjectDB {
     public static void main(String[] args)
     throws SQLException, IOException, java.lang.ClassNotFoundException
     {
-        
+       
+           
+       
          Statement s = null;
          Connection con = null;
          Random rand = new Random();
-         List <String> idList = new ArrayList<String>();
+         
          
         Class.forName ("oracle.jdbc.driver.OracleDriver");
         con = DriverManager.getConnection
@@ -52,121 +54,168 @@ public class PopulateProjectDB {
                "Med1nho93");
         s=con.createStatement();
         
+        //Fills up phone table first:
+        
+        /*String manufacturerList[] = {"Samsung","Apple","Lenovo Motorola","Xiaomi","Huawei","LG Electronics","Sony Mobile","Microsoft"};
+        
+        String samsungPhones[] = {"Galaxy S7 Edge","Galaxy Note 6", "Galaxy S5", "Galaxy S3", "Galaxy S4"};
+        String applePhones[] = {"iPhone 5","iPhone 5C","iPhone 6","iPhone 4","iPhone 4S"};
+        String motorolaPhones[] = {"Moto X Force","Droid Turbo 2","Droid Maxx 2","Moto X Style","Moto G Turbo Edition"};
+        String xiaomiPhones[] = {"Mi 5","Mi 4S","Redmi 3","Redmi Note Prime","Redmi Note 3"};
+        String huaweiPhones[] = {"Honor Holly 2 Plus","Nexus 6P","Mate S","G7 Plus","Honor 5X","Y6 Pro"};
+        String lgPhones[] = {"LG G5","LG V10","LG G4","LG G Flex 2"};
+        String sonyPhones[] = {"Xperia X Performance","Xperia X","Xperia XA Dual","Xperia XA"};
+        String microsoftPhones[] = {"Lumia 650","Lumia 950 XL Dual SIM","Lumia 950 XL","Lumia 950","Lumia 550"};
         
         
-      
-       List <String> dateList = new ArrayList<String>();
-        List <Long> phoneList = new ArrayList<Long>();
-        List <String> otherList = new ArrayList<String>();
-        try
-        {
-            FileReader fileR = new FileReader("randomDateList.txt");
-            BufferedReader bw = new BufferedReader(fileR);
-            String line;
-            while  (( line = bw.readLine() ) != null)
-            {
-                dateList.add(line);
-            }
-            bw.close();
-            fileR.close();
-            
-            FileReader fileReader = new FileReader("newPhoneList.txt");
-            BufferedReader buff = new BufferedReader(fileReader);
-            while  (( line = buff.readLine() ) != null)
-            {
-                otherList.add(line);
-            }
-            buff.close();
-            fileReader.close();
-            
-            String searchFor = "select phone_num from phone_number";
-            ResultSet result = s.executeQuery (searchFor);
-            while (result.next())
-                phoneList.add(result.getLong(1));
-            SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-            int usage_id = 217341;
-            for (int counter = 0; counter < 1515; counter++)
-            {
-                
-                for (int count = rand.nextInt(dateList.size()) ; count < dateList.size() -1; count = count +  20)
+        FileReader fileR = new FileReader("randomDateList.txt");
+                BufferedReader bw = new BufferedReader(fileR);
+        List <String> store_id = new ArrayList<String>();
+        List <String> dateList = new ArrayList<String>();
+                String line;
+                while ((line = bw.readLine()) != null)
                 {
-                    usage_id++;
-                    int type = rand.nextInt(2);
-                    String typeOf;
-                    if (type == 1)
-                        typeOf = "Destination";
-                    else
-                        typeOf = "Source";
-                    String insertString = "insert into usage values("+usage_id + "," + phoneList.get(counter) + ",'" +typeOf + "')";
 
-                    s.executeUpdate(insertString);
-                                        System.out.println(insertString);
-                    //int randomNumber = rand.nextInt(3);
-                    int randomNumber = 2;
-                    //System.out.println(randomNumber);
-                    switch (randomNumber) 
-                    {
-                    //internet
-                        case 0:
-                            
-                            int randomByte = rand.nextInt(30) + 1;
-                            insertString = "insert into internet_usage values (" + usage_id + "," + randomByte + ")";
-                            s.executeUpdate(insertString);
-                            System.out.println("Net");
-                        break;
-                    //text
-                        case 1:
-                            
-                                int randomPhone = rand.nextInt(299);
-                                int size = rand.nextInt(200) + 1;
-                                insertString = "insert into text_usage values (" + usage_id + ",TO_TIMESTAMP('" + dateList.get(count) + "','DD-MM-YYYY HH24:MI:SS')," +
-                                        size + "," + otherList.get(randomPhone) + ")";
-                                s.executeUpdate(insertString);
-                                System.out.println("Text");
-                        break;
-                            
-                        default:
-                            //call
-                            
-                            int randomPhones = rand.nextInt(299);
-                            int biscoito = rand.nextInt(613);
-                            String time1 = dateList.get(count);
-                            //String time2 = dateList.get(count + 1);
-    
-                            Calendar cal = Calendar.getInstance();
-                           
-                            java.util.Date d1 = format.parse(time1);
-                            cal.setTime(d1);
-                            cal.add(Calendar.MINUTE,rand.nextInt(5) + 1);
-                            java.util.Date d2 = cal.getTime();
-                            String time2 = format.format(d2);
-                            //java.util.Date d2 = format.parse(time2);
-                            
-                            long duration = (d2.getTime() - d1.getTime()) / 1000;
-                            insertString = "insert into call_usage values (" + usage_id + ",TO_TIMESTAMP('" + time1 + "','DD-MM-YYYY HH24:MI:SS')," +
-                                    "TO_TIMESTAMP('" + time2 + "','DD-MM-YYYY HH24:MI:SS')," + duration + "," + otherList.get(randomPhones) + ")";
-                            //System.out.println(insertString);
-                            s.executeUpdate(insertString);
-                            System.out.println("Call");
-                        break;
-                            
-                    }
+                    dateList.add(line);
                 }
-                System.out.println("Moving on!");
-            }
-            
-            
-            
-            
-            
-        }
-        catch (FileNotFoundException ex)
+                    
+        Long order_id = 1L;
+        String searchFor = "select store_id from physical_store";
+        ResultSet result = s.executeQuery(searchFor);
+        
+        while (result.next())
         {
-            System.out.println("Abiboreboborebabo");
-        } catch (ParseException ex) {
-            Logger.getLogger(PopulateProjectDB.class.getName()).log(Level.SEVERE, null, ex);
+            store_id.add(result.getString(1));
         }
-                 
+        
+  
+        
+       searchFor = "select account_id from sold natural join active_phone natural join phone_number natural join account\n" +
+                    "group by account_id\n" +
+                    "having (count(phone_num) > 1 and count(phone_num) < 4) or count(phone_num) > 4";
+       result = s.executeQuery(searchFor);
+       List <String> accountList = new ArrayList<String>();
+       
+       for (int counter = 0; counter < 50 && result.next(); counter++)
+       {
+           accountList.add(result.getString(1));
+       }
+       
+       List <String> meid = new ArrayList<String>();
+       List <String> cust_id = new ArrayList<String>();
+       
+       for (int counter = 0; counter < accountList.size(); counter++)
+       {
+           searchFor = "select meid,cust_id from owns natural join active_phone natural join phone_number natural join account\n" +
+                        "where account_id = " + accountList.get(counter);
+           result = s.executeQuery(searchFor);
+           result.next();
+           meid.add(result.getString(1));
+           cust_id.add(result.getString(2));
+       }
+           
+                
+        
+        for (int counter = 0; counter < accountList.size(); counter++)
+        {
+            int randomTimes = rand.nextInt(10) + 2;
+            System.out.println(randomTimes);
+            for (int counter2 = 0; counter2 < randomTimes; counter2++)
+            {
+                String model = "";
+                int randomNum = rand.nextInt(8);
+                String manufacturer = manufacturerList[randomNum];
+                switch (randomNum)
+                {
+                    case 0:
+                        randomNum = rand.nextInt(5);
+                        model = samsungPhones[randomNum];
+                        break;
+                    case 1:
+                        randomNum = rand.nextInt(5);
+                        model = applePhones[randomNum];
+                        break;
+                    case 2:
+                        randomNum = rand.nextInt(5);
+                        model = motorolaPhones[randomNum];
+                        break;
+                    case 3:
+                        randomNum = rand.nextInt(5);
+                        model = xiaomiPhones[randomNum];
+                        break;
+                    case 4:
+                        randomNum = rand.nextInt(6);
+                        model = huaweiPhones[randomNum];
+                        break;
+                    case 5:
+                        randomNum = rand.nextInt(4);
+                        model = lgPhones[randomNum];
+                        break;
+                    case 6:
+                        randomNum = rand.nextInt(4);
+                        model = sonyPhones[randomNum];
+                        break;
+                    case 7:
+                        randomNum = rand.nextInt(5);
+                        model = microsoftPhones[randomNum];
+                        break;
+                    default:
+                        break;
+
+                }
+                
+                String removeString = "delete from sold where meid = " + meid.get(counter);
+                s.executeUpdate(removeString);
+               
+                
+
+                int number = rand.nextInt(174);
+                String insertString = "insert into online_order values (" + order_id + "," + cust_id.get(counter) + "," + meid.get(counter) + ",TO_TIMESTAMP('" + dateList.get(number) + 
+                        "','DD-MM-YYYY HH24:MI:SS'))";
+
+                 System.out.println(insertString);
+                
+                s.executeUpdate(insertString);
+
+               order_id += 1L;
+            }
+        }*/
+        
+        String searchFor = "select meid,cust_id from owns natural join phone natural left outer join sold\n" +
+                            "where store_id is null";
+        ResultSet  result = s.executeQuery(searchFor);
+        
+        List<String> meidList = new ArrayList<String>();
+        List<String> idList = new ArrayList<String>();
+        
+        while (result.next())
+        {
+            meidList.add(result.getString(1));
+            idList.add(result.getString(2));
+        }
+         Long order_id = 1L;
+        
+         FileReader fileR = new FileReader("randomDateList.txt");
+         BufferedReader bw = new BufferedReader(fileR);
+  
+        List <String> dateList = new ArrayList<String>();
+                String line;
+                while ((line = bw.readLine()) != null)
+                {
+
+                    dateList.add(line);
+                }
+        for (int counter = 0; counter < idList.size(); counter++)
+        {
+            int number = rand.nextInt(174);
+            String insertString = "insert into online_order values (" + order_id + "," + idList.get(counter) + "," + meidList.get(counter) + ",TO_TIMESTAMP('" + dateList.get(number) + 
+                        "','DD-MM-YYYY HH24:MI:SS'))";
+            s.executeUpdate(insertString);
+            
+            order_id += 1L;
+        }
+        
+        
        
         s.close();
         con.close();

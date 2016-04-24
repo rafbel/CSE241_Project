@@ -144,6 +144,14 @@ foreign key (store_id) references physical_store
 foreign key (meid) references phone
 	on delete cascade);
 	
+create table sell
+(store_id numeric(12,0),
+meid numeric(10,0),
+foreign key (store_id) references physical_store
+	on delete cascade,
+foreign key (meid) references phone
+	on delete cascade);
+	
 create table set_up
 (
 	account_id numeric(12,0),
@@ -157,11 +165,11 @@ create table online_order
 (
 	order_id numeric(12,0),
 	cust_id numeric(10,0),
-	account_id numeric(12,0),
+	meid numeric(10,0),
 	order_date TIMESTAMP,
 	primary key (order_id),
 	foreign key (cust_id) references customer on delete cascade,
-	foreign key (account_id) references account on delete cascade
+	foreign key (meid) references phone on delete cascade
 
 );
 

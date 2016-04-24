@@ -1,3 +1,0 @@
-source phone number, destination phone number, time, bytes
-source phone number, destination phone number, start time, end time
-source phone number, type of Internet access (upload or download), bytes
