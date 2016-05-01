@@ -181,7 +181,7 @@ public class PopulateProjectDB {
             }
         }*/
         
-        String searchFor = "select meid,cust_id from owns natural join phone natural left outer join sold\n" +
+       /* String searchFor = "select meid,cust_id from owns natural join phone natural left outer join sold\n" +
                             "where store_id is null";
         ResultSet  result = s.executeQuery(searchFor);
         
@@ -213,6 +213,36 @@ public class PopulateProjectDB {
             s.executeUpdate(insertString);
             
             order_id += 1L;
+        }*/
+       
+        FileReader fileR = new FileReader("randomDateList.txt");
+         BufferedReader bw = new BufferedReader(fileR);
+  
+        List <String> dateList = new ArrayList<String>();
+                String line;
+                while ((line = bw.readLine()) != null)
+                {
+
+                    dateList.add(line);
+                }
+                
+        String searchFor = "select meid from unactive_phone";
+        ResultSet result = s.executeQuery(searchFor);
+        List <String> idList = new ArrayList <String>();
+        
+        while (result.next())
+            idList.add(result.getString(1));
+                
+                
+        for (int counter = 0; counter < idList.size(); counter++)
+        {
+            int number = rand.nextInt(174);
+            
+           
+           String insertString = "update unactive_phone SET network_time_period = TO_TIMESTAMP('" + dateList.get(number) + "','DD-MM-YYYY HH24:MI:SS') where meid = " + idList.get(counter);
+            s.executeUpdate(insertString);
+            
+            
         }
         
         

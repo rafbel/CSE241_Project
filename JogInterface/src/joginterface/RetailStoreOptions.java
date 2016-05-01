@@ -10,6 +10,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -122,28 +124,30 @@ public class RetailStoreOptions
         {
             System.out.println("Enter the product's manufacturer");
             Scanner sc = new Scanner(System.in);
-            String manufacturer = sc.next();
+            String manufacturer = sc.nextLine();
             
             System.out.println("Enter the product's model");
-            String model = sc.next();
+            String model = sc.nextLine();
             
-            System.out.println("Enter the quantity desired");
+
             int quantity;
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Enter the desirable quantity");
             while (true)
             {
-                while (sc.hasNextInt())
+                while (!scanner.hasNextInt())
                 {
-                    System.out.println("Please enter an appropriate quantity");
-                    sc.next();
+                    System.out.println("Enter an appropriate quantity");
+                    scanner.next();
                 }
-                quantity = sc.nextInt();
+                quantity = scanner.nextInt();
                 if (quantity > 0)
                     break;
             }
             
             Long restock_id = 0L;
             
-            String searchFor = "select restock_id from restock where restock_id >= all (select restock_id from restock)";
+            String searchFor = "select restock_id from restock_order where restock_id >= all (select restock_id from restock_order)";
             ResultSet result = s.executeQuery(searchFor);
             
             if (result.next())
@@ -167,9 +171,11 @@ public class RetailStoreOptions
                 s.executeUpdate(insertString);
                 
                 //Insert into restock
-                insertString = "insert into restock_order values(" + restock_id + "," + meid + ",CURRENT_TIMESTAMP)";
+                insertString = "insert into restock_order values(" + restock_id + "," + meid + "," + storeID + ",CURRENT_TIMESTAMP)";
                 s.executeUpdate(insertString);
             }
+            
+            System.out.println("Restock has been requested");
                 
         } 
         catch (SQLException ex) {
@@ -202,7 +208,7 @@ public class RetailStoreOptions
             while (true)
             {
                 System.out.println("Enter the restock identification number of the desired request");
-                while (sc.hasNextInt())
+                while (!sc.hasNextInt())
                 {
                     System.out.println("Enter a valid number");
                     sc.next();
@@ -249,7 +255,7 @@ public class RetailStoreOptions
             {
                 System.out.println("Unvalid name. A name consists of only letters");
             }
-            searchFor = "select customer_address, account_id  from customer natural join has where name = " + cust_name;
+            searchFor = "select customer_address, account_id  from customer natural join has where name = '" + cust_name +"'";
             result = s.executeQuery(searchFor);
                 
             if (!result.next())
@@ -262,11 +268,11 @@ public class RetailStoreOptions
                 
                 System.out.println("Please enter the account identification number associated with the customer");
 
-                System.out.format("14%s  -  38%s","ID","Address");
-                System.out.format("14%s  -  38%s",result.getString(2),result.getString(1));
+                System.out.format("%-14s  -  %-38s\n","ID","Address");
+                System.out.format("%-14s  -  %-38s\n",result.getString(2),result.getString(1));
                 
                 while (result.next())
-                    System.out.format("14%s  -  38%s",result.getString(2),result.getString(1));
+                    System.out.format("%-14s  -  %-38s\n",result.getString(2),result.getString(1));
                 
                 String account_id;
                 String customerID;
@@ -278,7 +284,7 @@ public class RetailStoreOptions
                         System.out.println("Please enter an identification number");
                         account_id = sc.next();
                     }
-                    searchFor = "select cust_id from customer natural join has where name = " + cust_name + " and account_id = " +  account_id;
+                    searchFor = "select cust_id from customer natural join has where name = '" + cust_name + "' and account_id = " +  account_id;
                     result = s.executeQuery(searchFor);
                     if (result.next())
                     {
@@ -316,14 +322,18 @@ public class RetailStoreOptions
                     {
                         System.out.println("These are the phones available on inventory:");
                         checkInventory();
+                        System.out.println();
                         String meid;
+
                         while (true)
                         {
+                            Scanner manScan = new Scanner(System.in);
                             System.out.println("Please type the manufacturer of the phone the customer desires");
-                            String manufacturer = sc.next();
+                            String manufacturer = manScan.nextLine();
 
+                            Scanner modScan = new Scanner(System.in);
                             System.out.println("Please type the model of the phone the customer desires");
-                            String model = sc.next();
+                            String model = modScan.nextLine();
 
                             searchFor = "select meid from phone natural join sells where store_id = " + storeID + " and model = '" + model + "' and manufacturer = '" + manufacturer + "'";
                             result = s.executeQuery(searchFor);
@@ -374,6 +384,7 @@ public class RetailStoreOptions
                         insertString = "insert into owns values (" + customerID + "," + meid + ")";
                         s.executeUpdate(insertString);
                         
+                        System.out.println("Phone selling process was a success.");
                         
                     }
 
@@ -404,9 +415,12 @@ public class RetailStoreOptions
 
 
             System.out.println("Please enter customer's address");
-            String address = sc.next();
+            Scanner addressSc = new Scanner(System.in);
+            String address = addressSc.nextLine();
+            if (address.length() > 38)
+                address = address.substring(0,38);
 
-            String searchFor = "select cust_id from customer where name =" + name + " and customer_address = " + address;
+            String searchFor = "select cust_id from customer where name ='" + name + "' and customer_address = '" + address + "'";
             ResultSet result = s.executeQuery(searchFor);
             Long cust_id = 0L;
             String insertString;
@@ -445,7 +459,7 @@ public class RetailStoreOptions
             s.executeUpdate(insertString);
             
             System.out.println("Enter account type:");
-            System.out.println("The possible choices are: individual, bamily, business. Don't use capital letters please.");
+            System.out.println("The possible choices are: individual, family, business. Don't use capital letters please.");
             
             String type;
             while (!(type = sc.next()).equals("individual") && !type.equals("family") && !type.equals("usiness"))
@@ -459,6 +473,77 @@ public class RetailStoreOptions
             s.executeUpdate(insertString);
             
             //Add a phone!
+            System.out.println("These are the phones available on inventory:");
+            checkInventory();
+            System.out.println();
+            
+            String meid;
+
+            while (true)
+            {
+                Scanner manScan = new Scanner(System.in);
+                System.out.println("Please type the manufacturer of the phone the customer desires");
+                String manufacturer = manScan.nextLine();
+
+                Scanner modScan = new Scanner(System.in);
+                System.out.println("Please type the model of the phone the customer desires");
+                String model = modScan.nextLine();
+
+                searchFor = "select meid from phone natural join sells where store_id = " + storeID + " and model = '" + model + "' and manufacturer = '" + manufacturer + "'";
+                result = s.executeQuery(searchFor);
+
+                if (result.next())
+                {
+                    meid = result.getString(1);
+                    break;
+                }
+                else
+                    System.out.println("Please enter an appropriate model and manufacturer combination");
+
+            }
+            
+            Random rand = new Random();
+            boolean auth = true;
+            String phoneNum = "";
+            while (auth)
+            {
+                Long randomNumber = rand.nextLong();
+                if (randomNumber < 0)
+                    randomNumber = -randomNumber;
+                phoneNum = "" + randomNumber;
+                if (phoneNum.length() > 10)
+                    phoneNum = phoneNum.substring(0,10);
+                searchFor = "select phone_num from phone_number";
+                result = s.executeQuery(searchFor);
+                String phones = "";
+                while (result.next())
+                {
+                    if (result.getString(1).equals(phoneNum))
+                    {
+                        break;
+                    }
+                    phones = result.getString(1);
+                }
+                if (!phones.equals(phoneNum))
+                    auth = false;
+            }
+            
+            insertString = "insert into phone_number values (" + phoneNum + "," + account_id + ",'Primary')";
+            s.executeUpdate(insertString);
+            
+            insertString = "insert into active_phone values (" + meid + "," + phoneNum + ")";
+            s.executeUpdate(insertString);
+            
+            insertString = "insert into sold values (" + storeID + "," + meid + ")";
+            s.executeUpdate(insertString);
+            
+            insertString = "insert into sells values (" + storeID + "," + meid + ")";
+            s.executeUpdate(insertString);
+            
+            insertString = "insert into owns values (" + cust_id + "," + meid + ")";
+            s.executeUpdate(insertString);
+            
+            System.out.println("Customer " + cust_id + " now has a new account." + type + "   account with identification number " + account_id + " created for customer. Primary phone number is: " + phoneNum);
             
                     
             
@@ -474,6 +559,138 @@ public class RetailStoreOptions
     
     public void endService()
     {
+        try
+        {
+            String regex = "[0-9]+";
+            System.out.println("Enter customer name:");
+            Scanner nameSc = new Scanner(System.in);
+
+            String name = "";
+            while ((name = nameSc.nextLine()).matches(regex))
+            {
+                    System.out.println("Please enter a valid name");
+            }
+
+            String searchString = "select cust_id,customer_address from customer where name ='" + name + "'";
+            ResultSet result = s.executeQuery(searchString);
+            
+            while (true)
+            {
+            
+                if (!result.next())
+                    System.out.println("No customer with such name.");
+                else
+                {
+                    System.out.format("%-12s - %-38s\n","ID","Address");
+                    System.out.format("%-12s - %-38s\n",result.getString(1),result.getString(2));
+                    while (result.next())
+                    {
+                        System.out.format("%-12s - %-38s\n",result.getString(1),result.getString(2));
+                    }
+                    break;
+                }
+            
+                
+                    
+            }
+            Scanner sc = new Scanner(System.in);
+            String id = "";
+            while (true)
+            {
+                System.out.format("Please select an identification number from the list above.");
+                id = sc.next();
+                searchString = "select cust_id from customer where name ='" + name + "' and cust_id = " + id;
+                result = s.executeQuery(searchString);
+                
+                if (result.next())
+                    break;
+                
+            }
+            
+            //Selects which account for the customer: (might have two accounts)
+            System.out.println("The customer has the following accounts:");
+            searchString = "select account_id from has natural join customer where cust_id = " + id;
+            result = s.executeQuery(searchString);
+            
+            while (result.next())
+            {
+                System.out.println(result.getString(1));
+            }
+            
+            String account_id;
+            while (true)
+            {
+
+                System.out.println("Please select an account identification number from the list above.");
+                account_id = sc.next();
+                
+                searchString = "select account_id from account where account_id = " + account_id;
+                result = s.executeQuery(searchString);
+                
+                if (result.next())
+                    break;
+                
+                
+            }
+            
+            //Insert into unactive_phone
+            List <String> phoneList = new ArrayList<String>();
+            List <String> meidList = new ArrayList<String>();
+            
+            searchString = "select phone_num,meid from active_phone natural join phone_number where account_id = " + account_id;
+            s.executeQuery(searchString);
+            while (result.next())
+            {
+                phoneList.add(result.getString(1));
+                meidList.add(result.getString(2));
+            }
+            
+            
+            
+            searchString = "select info_id from unactive_phone where info_id >= all (select info_id from unactive_phone)";
+            result = s.executeQuery(searchString);
+            Long info_id = 1L;
+            
+            if (result.next())
+                info_id = result.getLong(1) + 1L;
+            
+            for (int counter = 0; counter < phoneList.size(); counter++)
+            {
+                String insertString = "insert into unactive_phone values (" + meidList.get(counter) + "," + info_id + "," + phoneList.get(counter) + ",CURRENT_TIMESTAMP)";
+                s.executeUpdate(insertString);
+            }
+            
+            //Delete acc_plan
+            String deleteString = "delete from acc_plan where account_id = " + account_id;
+            s.executeUpdate(deleteString);
+            
+            //Delete from phone_number
+            deleteString = "delete from phone_number where account_id = " + account_id;
+            s.executeUpdate(deleteString);
+            
+            //Delete active_phone
+            deleteString = "delete from active_phone where phone_num is null";
+            s.executeUpdate(deleteString);
+
+            //Delete account
+            deleteString = "delete from has where account_id = " + account_id;
+            s.executeUpdate(deleteString);
+            
+            //Delete account
+            deleteString = "delete from account where account_id = " + account_id;
+            s.executeUpdate(deleteString);
+            
+            System.out.println("Account was deleted succesfuly.");
+            
+            
+        } 
+        catch (SQLException ex) 
+        {
+            Logger.getLogger(RetailStoreOptions.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Database error. Please try again later.");
+        }
+        
+        
         
     }
     

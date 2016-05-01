@@ -48,17 +48,15 @@ public class JogInterface
                     boolean doQuit = false;
                     while (!doQuit)
                     {
-                try {
+                      try {
                         int option = 0;
                         do
                         {
                             System.out.println("Please choose one of the following available options:");
                             System.out.println("1 - Change billing plan");
                             System.out.println("2 - Request new phone");
-                            System.out.println("3 - Terminate Service");
-                            System.out.println("3 - Deactivate phone");
-                            System.out.println("4 - Change account type");
-                            System.out.println("5 - Return to main menu");
+                            System.out.println("3 - Return to main menu");
+ 
 
                             while (!sc.hasNextInt())
                             {
@@ -70,27 +68,28 @@ public class JogInterface
 
                         CustomerOptions customerMenu = new CustomerOptions();
                         
-                        switch(option)
+                       
+                        if (option == 1)
+                            customerMenu.changePlan();
+                               
+
+                        else if (option == 2)
+                            
+                            customerMenu.requestNewPhone();
+                            
+                                
+                                
+                                
+                        else if (option == 3)
                         {
-                            case 1:
-                                  customerMenu.changePlan();
-                                break;
+                            System.out.println("Returning to main menu");
+                            customerMenu.closeConnection();
+                            doQuit = true;
+                        }
 
-                            case 2:
-                                customerMenu.requestNewPhone();
-                                break;
-                                
-                                
-                                
-                            case 6:
-                                System.out.println("Returning to main menu");
-                                customerMenu.closeConnection();
-                                doQuit = true;
-                                break;
-
-                            default:
-                                break;
-                    }
+                        else
+                        System.out.println("Not an available option");
+                    
                 } catch (ClassNotFoundException ex) {
                     Logger.getLogger(JogInterface.class.getName()).log(Level.SEVERE, null, ex);
                     System.out.println("Database error. Please try again later");
@@ -104,6 +103,81 @@ public class JogInterface
                 
                 case "Retail": //RetailStoreOptions Interface
                 case "retail":
+                    
+                    int choice = 0;
+                    while (true)
+                    {
+                        System.out.println("Please choose one of the following options");
+                        System.out.println("1 - Check inventory");
+                        System.out.println("2 - Request restock");
+                        System.out.println("3 - Update inventory");
+                        System.out.println("4 - Sell phone");
+                        System.out.println("5 - Start service");
+                        System.out.println("6 - Terminate service");
+                        System.out.println("7 - Return to main menu");
+                        
+                        while (!sc.hasNextInt())
+                        {
+                            System.out.println("Please enter a valid number");
+                            sc.next();
+                        }
+                        choice = sc.nextInt();
+                        
+                        if (choice >= 1 && choice <= 7)
+                            break;
+                        else
+                            System.out.println("Please enter a valid option");
+                    }
+                    try
+                    {
+                        
+                        RetailStoreOptions retail = new RetailStoreOptions();
+                        
+                        if (choice == 1)
+                            retail.checkInventory();
+                                
+
+                        else if (choice == 2)
+                            retail.restock();
+                               
+                                
+                        else if (choice == 3)
+                            retail.updateInventory();
+                           
+                                
+                        else if (choice == 4)
+                            retail.sellPhone();
+                                
+                             
+                                
+                        else if (choice == 5)
+                                retail.startService();
+                                
+                               
+                                
+                        else if (choice == 6)
+                                retail.endService();
+                                
+                                
+
+                        else 
+                        {
+                                System.out.println("Returning to main menu");
+                                retail.close();
+                                break;
+                        }
+                        
+                        
+                               
+                        
+                    } 
+                    catch (ClassNotFoundException | SQLException ex) 
+                    {
+                        Logger.getLogger(JogInterface.class.getName()).log(Level.SEVERE, null, ex);
+                        System.out.println("Database error. Please try again later");
+                
+                    }
+                    
                     
                     break;
                 
@@ -132,24 +206,24 @@ public class JogInterface
                     try
                     {
                         SystemOptions system = new SystemOptions();
-                        switch (option)
+                        if (option == 1)
+                            
+                            system.readUsage();
+                                
+
+                        else if (option == 2)
+                            system.printBill();
+                        
+
+                        else if (option == 3)
                         {
-                            case 1:
-                                system.readUsage();
-                                break;
-
-                            case 2:
-                                system.printBill();
-                                break;
-
-                            case 3:
                                 System.out.println("Returning to main menu");
                                 system.close();
                                 break;
-                            default:
-                                break;
                         }
-                    } 
+                               
+                        }
+                     
                     catch (ClassNotFoundException | SQLException ex) 
                     {
                         Logger.getLogger(JogInterface.class.getName()).log(Level.SEVERE, null, ex);

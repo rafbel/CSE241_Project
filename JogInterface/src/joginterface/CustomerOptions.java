@@ -25,12 +25,42 @@ public class CustomerOptions
     String customerID;
     String accountID;
     String accountType;
-    DBCon connection;
+
     
     
     public CustomerOptions() throws ClassNotFoundException, SQLException //initializes BD -> completed
     {
-        connection = new DBCon(s,con);
+        boolean credentialVerify = true;
+        Scanner sc = new Scanner(System.in);
+      
+      //Checks to see if user entered the right credentials
+      while (credentialVerify)
+      {
+          try
+          {
+            System.out.print("Enter Oracle user ID: ");
+            String username = sc.next();
+            System.out.print("Enter Oracle user password: ");
+            String password = sc.next();
+
+            credentialVerify = false;
+
+            Class.forName ("oracle.jdbc.driver.OracleDriver");
+            con = DriverManager.getConnection
+              ("jdbc:oracle:thin:@edgar1.cse.lehigh.edu:1521:cse241",username,
+               password);
+              s=con.createStatement();
+          }
+          catch (SQLException e) {
+              System.out.println("User not found. Please enter your credentials once again");
+              credentialVerify = true;
+          }
+          catch (ClassNotFoundException ex)
+          {
+              System.out.println("Database error.Please try again.");
+              credentialVerify = true;
+          }
+        }
     
       
         authAccount();
@@ -52,21 +82,21 @@ public class CustomerOptions
         
         while (result.next())
         {
-            System.out.println(result.getString(result.getString(1) + " - " + result.getString(2)));
+            System.out.println(result.getString(1) + " - " + result.getString(2));
         }
         
         Scanner sc = new Scanner(System.in);
         //gets rates depending on the new plan
         while (true)
         {
-            while (sc.hasNextInt())
+            while (!sc.hasNextInt())
             {
-                System.out.println("Please enter an appropriate choice"); 
+                System.out.println("Please enter an appropriate number"); 
                 sc.next();
             }
             newPlan = sc.nextInt();
             
-            if (newPlan > 0 || newPlan < 5)
+            if (newPlan > 0 && newPlan < 5)
                 break;
             else 
                 System.out.println("Please enter an appropriate choice"); 
@@ -75,6 +105,7 @@ public class CustomerOptions
         
         String insertString = "update acc_plan SET billing_id = " + newPlan + " where account_id =" + accountID;
         s.executeUpdate(insertString);
+        System.out.println("Billing plan was changed.");
         
         
     }
@@ -115,30 +146,41 @@ public class CustomerOptions
                                 "order by manufacturer";
 
             result = s.executeQuery(searchFor);
-            System.out.format("%32s %32s\n", "Model","Manufacturer");
+            System.out.format("%-32s %-32s\n", "Model","Manufacturer");
             while (result.next())
             {
                 modelList.add( result.getString(1));
                 manufacturerList.add(result.getString(2));
-                System.out.format("%32s %32s\n", result.getString(1),result.getString(2));
+                System.out.format("%-32s %-32s\n", result.getString(1),result.getString(2));
             }
 
             int counter;
-            String reqModel;
+            String reqModel = "";
             String manufacturer = "";
-            do
+            
+            
+            while (true)
             {
-                System.out.println("Please select a phone model from the list above:");
-                reqModel = scanner.next();
-                for (counter = 0; counter < modelList.size(); counter++)
+                System.out.println("Enter the manufacturer of the product desired.");
+                Scanner manSc = new Scanner(System.in);
+                manufacturer = manSc.nextLine(); 
+                System.out.println("Enter the model of the product desired.");
+                Scanner modSc = new Scanner(System.in);
+                reqModel = modSc.nextLine(); 
+                
+                searchFor = "select *" +
+                                " from phone where manufacturer = '" + manufacturer + "' and model = '" + reqModel+ "'";
+
+                result = s.executeQuery(searchFor);
+                if (result.next())
+                    break;
+                else
                 {
-                    if (modelList.get(counter).equals(reqModel))
-                    {
-                        manufacturer = manufacturerList.get(counter);
-                        break;
-                    }
+                    
+                    System.out.println("No such product found. Please try again.");
                 }
-            }while (!modelList.get(counter).equals(reqModel));
+                
+            }
 
 
             //Inserts new phone into phone table
@@ -153,12 +195,11 @@ public class CustomerOptions
                 meid = result.getInt(1) + 1;
             }
 
-            String insertString = "insert into phone values ('" + meid + "','" + manufacturer + "','" + reqModel + "')";
-            s.executeUpdate(insertString);
+            
 
             //Inserts Order into online_order table
             searchFor = "select order_id "
-                    + "from online_order"
+                    + "from online_order "
                     + "where order_id >= all(select order_id from online_order)";
             result = s.executeQuery(searchFor);
             int order_id = 1;
@@ -171,37 +212,36 @@ public class CustomerOptions
             SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
             String formattedDate = sdf.format(date);
 
+            String insertString = "insert into phone values ('" + meid + "','" + manufacturer + "','" + reqModel + "')";
+            s.executeUpdate(insertString);
+            
             insertString = "insert into online_order values ('" + order_id + "','" + customerID + "','" + meid + "',TO_TIMESTAMP('" + formattedDate + "', 'DD-MM-YYYY HH24:MI:SS') )";
             s.executeUpdate(insertString);
 
             //Inserts into owns table
             insertString = "insert into owns values ('" + customerID + "','" + meid +  "')";
             s.executeUpdate(insertString);
+            
 
             //GENERATE PHONE NUMBER
             Random rand = new Random();
-            boolean auth = true;
             String phoneNum = "";
-            while (auth)
+            while (true)
             {
+                
                 Long randomNumber = rand.nextLong();
                 if (randomNumber < 0)
                     randomNumber = -randomNumber;
                 phoneNum = "" + randomNumber;
                 if (phoneNum.length() > 10)
                     phoneNum = phoneNum.substring(0,10);
-                searchFor = "select phone_num from phone_number";
+                searchFor = "select phone_num from phone_number where phone_num = " + phoneNum;
                 result = s.executeQuery(searchFor);
                 
-                while (result.next())
-                {
-                    if (result.getString(1).equals(phoneNum))
-                    {
-                        break;
-                    }
-                }
-                if (!result.getString(1).equals(phoneNum))
-                    auth = false;
+                if (!result.next())
+                    break;
+                
+                
             }
             
             //insert into phone_number table
@@ -218,145 +258,7 @@ public class CustomerOptions
         
     }
     
-    
-    /*public void deactivatePhone() //turns active phone into unactive phone
-    {
-        String checkString = "select count(*) from phone_number where account_id = " + accountID;
-        try
-        {
-            ResultSet result = s.executeQuery(checkString);
-            if (!result.next())
-            {
-                System.out.println("Database error. Please try again later.");
-            }
-            else
-            {
-                int numberPhone = result.getInt(1);
-                if (numberPhone <= 1)
-                {
-                    System.out.println("Only one phone number was detected in this account. Would you like to remove this phone number and terminate your account?");
-                    System.out.println("1 - Yes");
-                    System.out.println("2 - No");
-                    
-                    int choice = 0;
-                    Scanner scanner = new Scanner(System.in);
-                    while (true)
-                    {
-                        while (scanner.hasNextInt())
-                        {
-                            System.out.println("Please enter a valid option");
-                            scanner.next();
-                        }
-                        choice = scanner.nextInt();
-                        
-                        if (choice == 1 || choice == 2)
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            System.out.println("Please enter a valid option");
-                        }
-                    }
-                    
-                    if (choice == 0)
-                        System.out.println("Returning to main menu");
-                    else
-                        terminateService();
-                }
-                else
-                {
-                    List<String> phoneList = new ArrayList<String>();
-
-                    String searchFor = "select phone_num from phone_number where account_id = " + accountID;
-                    result = s.executeQuery(searchFor);
-
-                    System.out.println("Phone numbers linked to your account:");
-                    int counter = 0;
-                    while (result.next())
-                    {
-                        counter++;
-                        phoneList.add(result.getString(1));
-                        System.out.println(counter + " - " + result.getString(1));
-                    }
-                    boolean stay = true;
-                    Scanner sc = new Scanner(System.in);
-                    String phoneNum ="";
-                    int option = 0;
-                    while (stay)
-                    {
-                        System.out.println("Enter the number next to the phone number you wish to deactivate");
-                        while (sc.hasNextInt())
-                        {
-                            System.out.println("Please enter the number next to the phone number you desire to deactivate");
-                            sc.next();
-                        }
-                        option = sc.nextInt();
-                        if (option >= 1 || option <= counter)
-                        {
-                            option -= 1;
-                            phoneNum = phoneList.get(option);
-                            stay = false;
-                        }
-                    }
-                    
-                    searchFor = "select phone_type from phone_number where phone_num = " + phoneNum;
-                    result = s.executeQuery(searchFor); result.next();
-                    String phoneType = result.getString(1);
-                    
-                    if (phoneType.equals("Primary")) //makes another phone primary if the current one is
-                    {
-                        System.out.println("Phone number is set as a primary phone number. Please choose another number to be set as primary");
-                        for (int count = 0; count < option; count++)
-                        {
-                            System.out.println(count + " - " + phoneList.get(count));
-                        }
-                        for (int count = option + 1; count < phoneList.size(); count++)
-                        {
-                            System.out.println(count + " - " + phoneList.get(count));
-                        }
-                        int theChoice;
-                        while (true)
-                        {
-                            while (sc.hasNextInt())
-                            {
-                                System.out.println("Please choose an appropriate option");
-                                sc.next();
-                            }
-                            theChoice = sc.nextInt();
-                            
-                            if (theChoice >= 0 || theChoice <= phoneList.size() || theChoice != option)
-                                break;
-                        }
-                        
-                        String newPrime = phoneList.get(theChoice);
-                        String updateString = "update phone_number SET phone_type = 'Primary' where phone_num = " + newPrime;
-                        s.executeUpdate(updateString);
-                            
-                    }
-
-                    //Makes phone unactive:
-                    int info_id = 1;
-                    searchFor = "select info_id from unactive_phone where info_id >= all (select info_id from unactive_phone)";
-                    result = s.executeQuery(searchFor);
-                    if (result.next())
-                        info_id = result.getInt(1) + 1;
-                    
-                    //Calculate network time period:
-                    
-                    //Deletes phone number:
-
-
-
-                }
-            } 
-        }
-        catch (SQLException ex)
-        {
-            Logger.getLogger(CustomerOptions.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println("Database error. Please try again later.");
-        }
-    }*/
+   
   
     private void authAccount() throws SQLException //authorizes user -> completed
     {
@@ -381,7 +283,7 @@ public class CustomerOptions
             
             while (result.next())
             {
-                if (result.getString(2).equals(pass) || id == result.getInt(1))
+                if (result.getString(2).equals(pass) && id == result.getInt(1))
                 {
                     auth = true;
                     break;
@@ -389,22 +291,22 @@ public class CustomerOptions
             }
         }
         
-        searchFor = "select name,customer_address,customer_id from customer natural join has where account_id = " + id;
+        searchFor = "select name,customer_address,cust_id from customer natural join has where account_id = " + id;
         result = s.executeQuery(searchFor);
-        System.out.format("%10s %20s %48s", "Option", "Name", "Customer Address");
+        System.out.format("%-10s %-20s %-48s\n", "Option", "Name", "Customer Address");
         int option = 0;
         List <String> customerList = new ArrayList<String>(); 
         
         while (result.next())
         {
             option++;
-            System.out.format("%10s %20s %48s", option, result.getString(1), result.getString(2));
+            System.out.format("%-10s %-20s %-48s\n", option, result.getString(1), result.getString(2));
             customerList.add(result.getString(3));
         }
         
         auth = false;
         int choice = 0;
-        while (!auth)
+        while (true)
         {
             System.out.println("Enter the number associated with your name");
 
@@ -414,11 +316,8 @@ public class CustomerOptions
                    scanner.next();
             }
             choice = scanner.nextInt();
-            if (choice > 0 || choice <= customerList.size())
-            {
-                System.out.println("Please enter an acceptable number");
-                auth = true;
-            }
+            if (choice >= 1 && choice <= customerList.size())
+                    break;
         }
         
         customerID = customerList.get(choice - 1);
@@ -453,7 +352,8 @@ public class CustomerOptions
     
     public void closeConnection() throws SQLException //closes the connection -> completed
     {
-        connection.close(s,con);
+        s.close();
+        con.close();
         
     }
     

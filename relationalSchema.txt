@@ -15,7 +15,7 @@ primary key(meid) );
 create table unactive_phone
 (meid numeric(10,0),
 info_id numeric(12,0),
-network_time_period numeric(50,2),
+network_time_period TIMESTAMP,
 previous_number numeric(10,0),
 primary key (meid,info_id),
 foreign key (meid) references phone on delete cascade);
