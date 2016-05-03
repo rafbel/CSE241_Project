@@ -551,6 +551,20 @@ public class SystemOptions
                     + " and curr_date <= TO_TIMESTAMP('" + year + "-" + monthString + "-" + day + " 23:59:59', 'YYYY-MM-DD HH24:MI:SS')";
             ResultSet result = s.executeQuery(searchFor);
             
+            System.out.println("Please type the bill file name:");
+            Scanner scanner = new Scanner(System.in);
+            String outputFile = scanner.nextLine();
+                    
+            File outFile = new File(outputFile);
+                    
+            if (outFile.createNewFile())
+                System.out.println("Output file " + outputFile + " has been created!");
+            
+            
+            FileWriter fileW = new FileWriter(outFile);
+            BufferedWriter buffW = new BufferedWriter(fileW);
+            PrintWriter writer = new PrintWriter(buffW);
+            
             int billCounter = 1;
             double total_value = 0;
             while (result.next())
@@ -558,17 +572,31 @@ public class SystemOptions
                 System.out.println("Bill #" + billCounter);
                 System.out.println("Issued: " + result.getString(2) + " - Value to be paid: $" + result.getString(1));
                 System.out.println();
+                writer.println("Bill #" + billCounter);
+                writer.println("Issued: " + result.getString(2) + " - Value to be paid: $" + result.getString(1));
+                writer.println();
                 total_value += result.getDouble(1);
                 billCounter ++;
             }
-            System.out.println("Total value: $" + total_value );
+            System.out.println("Total value: $" + String.format("%.2f", total_value));
+            writer.println("Total value: $" + String.format("%.2f", total_value));
+            writer.println();
             System.out.println();
+            System.out.println("All the information shown on the console is now on the file specified");
+            
+            writer.close();
+            buffW.close();
+            fileW.close();
             
         } 
         catch (SQLException ex) 
         {
             Logger.getLogger(SystemOptions.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("Database error. Please try again later");
+        } catch (IOException ex) 
+        {
+            Logger.getLogger(SystemOptions.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("File manager has detected an error. File could not be open or created");
         }
         
     }
