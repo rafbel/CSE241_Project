@@ -125,9 +125,20 @@ public class RetailStoreOptions
             System.out.println("Enter the product's manufacturer");
             Scanner sc = new Scanner(System.in);
             String manufacturer = sc.nextLine();
+            while (manufacturer.length() > 50)
+            {
+                System.out.println("Manufacturer name too large. Please enter a correct one");
+                manufacturer = sc.nextLine();
+            }
             
             System.out.println("Enter the product's model");
             String model = sc.nextLine();
+            
+            while (model.length() > 30)
+            {
+                System.out.println("Model name too large. Please enter a correct one");
+                manufacturer = sc.nextLine();
+            }
             
 
             int quantity;
@@ -141,8 +152,10 @@ public class RetailStoreOptions
                     scanner.next();
                 }
                 quantity = scanner.nextInt();
-                if (quantity > 0)
+                if (quantity > 0 && quantity < 50)
                     break;
+                else
+                    System.out.println("Please enter an acceptable quantity");
             }
             
             Long restock_id = 0L;
@@ -330,10 +343,23 @@ public class RetailStoreOptions
                             Scanner manScan = new Scanner(System.in);
                             System.out.println("Please type the manufacturer of the phone the customer desires");
                             String manufacturer = manScan.nextLine();
+                            
+                            while (manufacturer.length() > 50)
+                            {
+                                System.out.println("Name too large. Please try again.");
+                                manufacturer = manScan.nextLine();
+                            }
+                            
 
                             Scanner modScan = new Scanner(System.in);
                             System.out.println("Please type the model of the phone the customer desires");
                             String model = modScan.nextLine();
+                            
+                            while (model.length() > 30)
+                            {
+                               System.out.println("Name too large. Please try again."); 
+                               model = modScan.nextLine();
+                            }
 
                             searchFor = "select meid from phone natural join sells where store_id = " + storeID + " and model = '" + model + "' and manufacturer = '" + manufacturer + "'";
                             result = s.executeQuery(searchFor);
@@ -417,8 +443,12 @@ public class RetailStoreOptions
             System.out.println("Please enter customer's address");
             Scanner addressSc = new Scanner(System.in);
             String address = addressSc.nextLine();
-            if (address.length() > 38)
-                address = address.substring(0,38);
+            while (address.length() > 38)
+            {
+                System.out.println("Address length too large. Please enter another one:");
+                addressSc.nextLine();
+                
+            }
 
             String searchFor = "select cust_id from customer where name ='" + name + "' and customer_address = '" + address + "'";
             ResultSet result = s.executeQuery(searchFor);
@@ -445,8 +475,15 @@ public class RetailStoreOptions
             }
             
             //Create new account:
-            System.out.println("Allow user to choose account password");
+            System.out.println("Allow user to choose account password. No spaces are allowed.");
             String password = sc.next();
+            
+            while (password.length() > 12)
+            {
+                System.out.println("Password too large!");
+                password = sc.next();
+            }
+            
             
             searchFor = "select account_id from account where account_id >= all (select account_id from account)";
             result = s.executeQuery(searchFor);

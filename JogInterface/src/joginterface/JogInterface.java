@@ -40,6 +40,7 @@ public class JogInterface
        {
             printMainMenu();
             input = sc.next();
+
             
             switch(input)
             {
@@ -136,17 +137,20 @@ public class JogInterface
                         System.out.println("6 - Terminate service");
                         System.out.println("7 - Return to main menu");
                         
-                        while (!sc.hasNextInt())
+                        while (true)
                         {
-                            System.out.println("Please enter a valid number");
-                            sc.next();
+                            while (!sc.hasNextInt())
+                            {
+                                System.out.println("Please enter a valid number");
+                                sc.next();
+                            }
+                            choice = sc.nextInt();
+
+                            if (choice >= 1 && choice <= 7)
+                                break;
+                            else
+                                System.out.println("Please enter a valid option");
                         }
-                        choice = sc.nextInt();
-                        
-                        if (choice >= 1 && choice <= 7)
-                            break;
-                        else
-                            System.out.println("Please enter a valid option");
                     
                         try
                         {

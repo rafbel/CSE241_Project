@@ -67,6 +67,11 @@ If a customer tries to order a phone online or tries to buy one at a store and t
 A customer is able to have more than one account.
 To use the customer interface, the user must know both his account identification number and password. This is for security purposes just like it happens on other enterprises such as Verizon or Tmobile.
 
+All 3 kinds of categories have been applied to the project:  interactive interfaces, stream-input, reporting systems (billing).
+
+ojdbc.jar is included inside the lib file. It is necessary to run the JAR file. Don't move the file from its folder.
+
+Special note: When compiling the Java files please note they belong to package joginterface. The JAR file was generated using Netbeans 8.1
 
 ///////////////////
 /     Examples    /
@@ -116,5 +121,5 @@ For testing physical stores:
 
 For populating the database I used two sites to make my job easier: http://random-date-generator.com/, https://www.randomlists.com/random-addresses, and https://www.randomlists.com/phone-numbers.
 The first site generates random dates for timestamps, the second generates random addresses, and the third generates random phone numbers. Both were saved into files.
-Those files are inside the Populate DB Files folder. Inside that directory lies the CodeSnips.txt file, which has all the code snippets I created for populating the database, along with comments that
-explicity tell the user what does each one do.
+Those files are inside the Populate DB Files folder. Inside that directory lies the java files, which has all the code snippets I created for populating the database, along with comments that
+explicity tell the user what does each one do. The ones marked as stale are old files, which were kept for consulting purposes. These old files were used before the database design was changed one last time.

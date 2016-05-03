@@ -164,9 +164,23 @@ public class CustomerOptions
                 System.out.println("Enter the manufacturer of the product desired.");
                 Scanner manSc = new Scanner(System.in);
                 manufacturer = manSc.nextLine(); 
+                while (manufacturer.length() > 50)
+                {
+                    System.out.println("Name too large. Please try again");
+                    manufacturer = manSc.nextLine(); 
+
+                }
+                
                 System.out.println("Enter the model of the product desired.");
                 Scanner modSc = new Scanner(System.in);
-                reqModel = modSc.nextLine(); 
+                reqModel = modSc.nextLine();
+                
+                while (reqModel.length() > 30)
+                {
+                    System.out.println("Name too large. Please try again");
+                    reqModel = modSc.nextLine();
+                }
+                
                 
                 searchFor = "select *" +
                                 " from phone where manufacturer = '" + manufacturer + "' and model = '" + reqModel+ "'";

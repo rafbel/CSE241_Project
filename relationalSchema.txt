@@ -42,6 +42,7 @@ foreign key (meid) references phone
 
 create table account
 (account_id numeric(12,0),
+password varchar(12),
 primary key (account_id));
 	
 create table individual_account
