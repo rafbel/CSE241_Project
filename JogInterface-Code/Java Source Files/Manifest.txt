@@ -1,0 +1,3 @@
+Main-class: JogInterface
+Class-Path: ojdbc6.jar
+
